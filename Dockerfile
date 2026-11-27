@@ -12,7 +12,7 @@ RUN npm run build \
  && npm prune --omit=dev --ignore-scripts
 
 # ---- runtime: distroless = no shell, no package manager, runs as non-root (uid 65532) ----
-FROM gcr.io/distroless/nodejs22-debian12:nonroot@sha256:13593b7570658e8477de39e2f4a1dd25db2f836d68a0ba771251572d23bb4f8e
+FROM gcr.io/distroless/nodejs22-debian13:nonroot@sha256:c73ddeb03e1dc2d579aa111c83d6699c6b8b487e35c0c631d4a3a20229fc25ee
 LABEL org.opencontainers.image.source="https://github.com/poke1896/qsafe-gateway" \
       org.opencontainers.image.description="OAuth2/JWKS API with hybrid post-quantum encryption (X-Wing)" \
       org.opencontainers.image.licenses="MIT"
