@@ -6,6 +6,8 @@
 [![Container supply chain](https://github.com/poke1896/qsafe-gateway/actions/workflows/container.yml/badge.svg)](https://github.com/poke1896/qsafe-gateway/actions/workflows/container.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/poke1896/qsafe-gateway/badge)](https://scorecard.dev/viewer/?uri=github.com/poke1896/qsafe-gateway)
 
+**Live demo: https://qsafe-gateway.vercel.app** (interactive playground + attack lab)
+
 A small, production-minded API that shows **DevSecOps end to end**: a hardened OAuth 2.0 token service
 (ES256 JWTs, rotating JWKS, revocation) plus **hybrid post-quantum encryption** (X-Wing = ML-KEM-768 + X25519),
 shipped through a CI/CD pipeline that scans, signs and attests every container image.

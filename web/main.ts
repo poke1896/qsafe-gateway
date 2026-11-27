@@ -239,7 +239,7 @@ async function runAttack(button: HTMLButtonElement) {
   const blocked = res.status >= 400 && res.status < 500
   button.classList.add(blocked ? 'blocked' : 'passed')
   verdict.textContent = blocked
-    ? `BLOCKED · ${res.status} ${String(res.body?.['error'] ?? '')}`
+    ? `BLOCKED · ${res.status} ${String(res.body?.['error'] ?? 'edge firewall')}`
     : res.status === 0
       ? 'network error'
       : `NOT BLOCKED · ${res.status}`
