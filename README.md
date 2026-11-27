@@ -94,7 +94,8 @@ With Docker (read-only filesystem, all capabilities dropped):
 ```bash
 docker build -t qsafe-gateway .
 docker run --rm -p 8080:8080 --read-only --cap-drop ALL --security-opt no-new-privileges \
-  -e DEMO_READER_SECRET="$(openssl rand -hex 24)" -e DEMO_ADMIN_SECRET="$(openssl rand -hex 24)" qsafe-gateway
+  -e DEMO_READER_SECRET="$(openssl rand -hex 24)" -e DEMO_ADMIN_SECRET="$(openssl rand -hex 24)" \
+  -e PLAYGROUND_SECRET="$(openssl rand -hex 24)" qsafe-gateway
 ```
 
 Verify a published image was built by this repository's pipeline:
