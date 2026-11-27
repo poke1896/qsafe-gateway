@@ -10,9 +10,9 @@
   },
   "scripts": {
     "build:web": "tsx scripts/build-web.ts",
-    "dev": "npm run build:web && tsx watch src/server.ts",
+    "dev": "npm run build:web && tsx watch src/main.ts",
     "build": "npm run build:web && tsc -p tsconfig.build.json",
-    "start": "node dist/server.js",
+    "start": "node dist/main.js",
     "typecheck": "npm run build:web && tsc --noEmit && tsc -p tsconfig.web.json",
     "lint": "npm run build:web && eslint .",
     "test": "npm run build:web && vitest run",

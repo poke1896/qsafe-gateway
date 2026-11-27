@@ -29,4 +29,4 @@ EXPOSE 8080
 # Distroless has no curl/wget: probe with Node itself
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD ["/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-CMD ["dist/server.js"]
+CMD ["dist/main.js"]

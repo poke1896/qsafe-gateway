@@ -2,7 +2,7 @@
 // env vars here: serverless instances do not share memory, so generated keys would
 // differ per instance and tokens would randomly fail verification.
 import { handle } from 'hono/vercel'
-import { buildDeps, createApp } from '../src/app.js'
+import { buildDeps, createApp } from '../src/gateway.js'
 import { loadConfig } from '../src/config.js'
 
 const config = loadConfig()

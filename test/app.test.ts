@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { buildDeps, createApp } from '../src/app.js'
+import { buildDeps, createApp } from '../src/gateway.js'
 import { loadConfig } from '../src/config.js'
 import { b64u } from '../src/crypto/encoding.js'
 import { encrypt } from '../src/crypto/hybrid.js'

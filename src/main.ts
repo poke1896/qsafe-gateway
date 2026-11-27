@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server'
-import { buildDeps, createApp } from './app.js'
+import { buildDeps, createApp } from './gateway.js'
 import { loadConfig } from './config.js'
 
 const config = loadConfig()

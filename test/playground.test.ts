@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildDeps, createApp } from '../src/app.js'
+import { buildDeps, createApp } from '../src/gateway.js'
 import { loadConfig } from '../src/config.js'
 import { decrypt, generateHybridKeyPair } from '../src/crypto/hybrid.js'
 import { encryptForServer, fromB64u } from '../web/pq.js'
