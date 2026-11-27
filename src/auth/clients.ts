@@ -12,11 +12,16 @@ export interface Client {
 
 const sha256 = (value: string): Buffer => createHash('sha256').update(value, 'utf8').digest()
 
-export function buildClients(secrets: { reader: string; admin: string }): Map<string, Client> {
+export function buildClients(secrets: { reader: string; admin: string; playground?: string }): Map<string, Client> {
   const clients: Client[] = [
     { id: 'demo-reader', secretHash: sha256(secrets.reader), allowedScopes: ['profile:read', 'messages:write'] },
     { id: 'demo-admin', secretHash: sha256(secrets.admin), allowedScopes: [...SCOPES] },
   ]
+  // Public sandbox client for the browser playground: its secret is intentionally
+  // published, so it only ever gets the two low-privilege scopes.
+  if (secrets.playground) {
+    clients.push({ id: 'playground', secretHash: sha256(secrets.playground), allowedScopes: ['profile:read', 'messages:write'] })
+  }
   return new Map(clients.map((c) => [c.id, c]))
 }
 

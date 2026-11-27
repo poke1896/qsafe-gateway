@@ -3,6 +3,7 @@ import { z } from 'zod'
 // Development-only fallbacks. Production refuses to start without real secrets.
 const DEV_READER_SECRET = 'dev-only-reader-secret-change-me-0001'
 const DEV_ADMIN_SECRET = 'dev-only-admin-secret-change-me-00002'
+const DEV_PLAYGROUND_SECRET = 'dev-only-playground-secret-change-me-03'
 
 const schema = z
   .object({
@@ -19,6 +20,11 @@ const schema = z
     TOKEN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).max(1000).default(20),
     DEMO_READER_SECRET: z.string().min(32).optional(),
     DEMO_ADMIN_SECRET: z.string().min(32).optional(),
+    PLAYGROUND_ENABLED: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((v) => v === 'true'),
+    PLAYGROUND_SECRET: z.string().min(32).optional(),
     SIGNING_KEYS_JWKS: z.string().min(1).optional(),
     HYBRID_SECRET_KEY: z.string().min(1).optional(),
   })
@@ -31,7 +37,11 @@ const schema = z
       })
     }
     if (env.NODE_ENV === 'production') {
-      const required = { DEMO_READER_SECRET: env.DEMO_READER_SECRET, DEMO_ADMIN_SECRET: env.DEMO_ADMIN_SECRET }
+      const required = {
+        DEMO_READER_SECRET: env.DEMO_READER_SECRET,
+        DEMO_ADMIN_SECRET: env.DEMO_ADMIN_SECRET,
+        ...(env.PLAYGROUND_ENABLED ? { PLAYGROUND_SECRET: env.PLAYGROUND_SECRET } : {}),
+      }
       for (const [key, value] of Object.entries(required)) {
         if (!value) ctx.addIssue({ code: 'custom', path: [key], message: 'required in production' })
       }
@@ -49,6 +59,7 @@ export interface Config {
   tokenRateLimitPerMinute: number
   readerSecret: string
   adminSecret: string
+  playground: { enabled: boolean; secret: string }
   signingKeysJwks: string | undefined
   hybridSecretKey: string | undefined
 }
@@ -73,6 +84,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Config {
     tokenRateLimitPerMinute: env.TOKEN_RATE_LIMIT_PER_MINUTE,
     readerSecret: env.DEMO_READER_SECRET ?? DEV_READER_SECRET,
     adminSecret: env.DEMO_ADMIN_SECRET ?? DEV_ADMIN_SECRET,
+    playground: { enabled: env.PLAYGROUND_ENABLED, secret: env.PLAYGROUND_SECRET ?? DEV_PLAYGROUND_SECRET },
     signingKeysJwks: env.SIGNING_KEYS_JWKS,
     hybridSecretKey: env.HYBRID_SECRET_KEY,
   }

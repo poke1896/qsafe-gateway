@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>qsafe-gateway · Quantum-safe API playground</title>
+  <meta name="description" content="Interactive DevSecOps demo: OAuth2 JWTs with rotating JWKS, post-quantum X-Wing encryption in your browser, and live attack simulations." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1512'/%3E%3Cpath d='M16 5l9 4v6c0 6-4 10-9 12-5-2-9-6-9-12V9z' fill='none' stroke='%234ade80' stroke-width='2.4'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/app.css" />
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="brand" href="#"><span class="logo" aria-hidden="true"></span>qsafe-gateway</a>
+      <nav>
+        <a href="#flow">Live demo</a>
+        <a href="#attacks">Attack lab</a>
+        <a href="#pipeline">Pipeline</a>
+        <a class="gh" href="https://github.com/poke1896/qsafe-gateway" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">DevSecOps reference project · Adrián Valverde Elizondo</p>
+        <h1>An API that is ready for <span class="hl">quantum computers</span>.</h1>
+        <p class="lead">
+          OAuth&nbsp;2.0 tokens signed with ES256 and verified through a rotating JWKS, messages protected with
+          <strong>X-Wing</strong> (ML-KEM-768&nbsp;+&nbsp;X25519) hybrid encryption, and every release scanned, signed and attested by the CI/CD pipeline.
+          Everything below runs live against the real API.
+        </p>
+        <div class="chips">
+          <span>ES256 · RFC 9068</span><span>JWKS rotation</span><span>ML-KEM-768 (FIPS 203)</span>
+          <span>AES-256-GCM</span><span>Sigstore · SLSA</span><span>CodeQL · Semgrep · Trivy · ZAP</span>
+        </div>
+        <div class="cta">
+          <a class="btn primary" href="#flow">Try it live</a>
+          <a class="btn ghost" href="https://github.com/poke1896/qsafe-gateway" rel="noopener">View source</a>
+        </div>
+        <div class="badges">
+          <img alt="CI status" src="https://github.com/poke1896/qsafe-gateway/actions/workflows/ci.yml/badge.svg" />
+          <img alt="Security status" src="https://github.com/poke1896/qsafe-gateway/actions/workflows/security.yml/badge.svg" />
+          <img alt="Container supply chain status" src="https://github.com/poke1896/qsafe-gateway/actions/workflows/container.yml/badge.svg" />
+          <img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/poke1896/qsafe-gateway/badge" />
+        </div>
+      </div>
+    </section>
+
+    <section id="flow" class="wrap section">
+      <h2>Live demo</h2>
+      <p class="muted">Three steps, real requests. Open your browser's network tab to watch them.</p>
+
+      <div class="steps">
+        <article class="card" id="step1">
+          <div class="num">1</div>
+          <h3>Get an access token</h3>
+          <p class="muted">OAuth 2.0 client credentials. The server signs a short-lived JWT with its current ES256 key.</p>
+          <button class="btn primary" id="btn-token">Request token</button>
+          <div class="out" id="out-token" hidden>
+            <div class="jwt" id="jwt-raw"></div>
+            <div class="grid2">
+              <div><h4>Header</h4><pre id="jwt-header"></pre></div>
+              <div><h4>Payload</h4><pre id="jwt-payload"></pre></div>
+            </div>
+            <p class="meta" id="jwt-meta"></p>
+          </div>
+        </article>
+
+        <article class="card" id="step2">
+          <div class="num">2</div>
+          <h3>Verify it with the JWKS</h3>
+          <p class="muted">Anyone can verify the token with the public keys. The <code>kid</code> in the token header picks the key.</p>
+          <button class="btn" id="btn-verify" disabled>Fetch JWKS &amp; call API</button>
+          <div class="out" id="out-verify" hidden>
+            <h4>/.well-known/jwks.json</h4>
+            <pre id="jwks"></pre>
+            <p class="meta" id="verify-meta"></p>
+          </div>
+        </article>
+
+        <article class="card" id="step3">
+          <div class="num">3</div>
+          <h3>Encrypt post-quantum, in your browser</h3>
+          <p class="muted">Your browser encapsulates a key to the server's X-Wing public key, derives an AES-256-GCM key with HKDF and seals the message. Only the server can open it.</p>
+          <label class="field">Secret message
+            <textarea id="message" rows="2" maxlength="2000">Harvest now, decrypt later? Not this message.</textarea>
+          </label>
+          <button class="btn" id="btn-encrypt" disabled>Encrypt &amp; send</button>
+          <div class="out" id="out-encrypt" hidden>
+            <div class="stats" id="pq-stats"></div>
+            <h4>Envelope sent over the wire</h4>
+            <pre id="envelope"></pre>
+            <p class="meta" id="encrypt-meta"></p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="attacks" class="wrap section">
+      <h2>Attack lab</h2>
+      <p class="muted">Classic attacks against JWT and encryption. Each one is sent to the live API; every one should be blocked. Get a token in step 1 first.</p>
+      <div class="attacks">
+        <button class="attack" data-attack="none" disabled>
+          <strong>alg: none</strong><span>Unsigned token claiming admin scope</span><em class="verdict"></em>
+        </button>
+        <button class="attack" data-attack="hs256" disabled>
+          <strong>Algorithm confusion</strong><span>HS256 token keyed with the public JWK</span><em class="verdict"></em>
+        </button>
+        <button class="attack" data-attack="tamper" disabled>
+          <strong>Privilege escalation</strong><span>Edit the payload to add keys:rotate</span><em class="verdict"></em>
+        </button>
+        <button class="attack" data-attack="scope" disabled>
+          <strong>Missing scope</strong><span>Valid token on the admin key-rotation endpoint</span><em class="verdict"></em>
+        </button>
+        <button class="attack" data-attack="ciphertext" disabled>
+          <strong>Ciphertext tampering</strong><span>Flip one bit of an encrypted message</span><em class="verdict"></em>
+        </button>
+        <button class="attack" data-attack="kem" disabled>
+          <strong>KEM substitution</strong><span>Swap in another key encapsulation</span><em class="verdict"></em>
+        </button>
+      </div>
+    </section>
+
+    <section id="pipeline" class="wrap section">
+      <h2>The pipeline behind it</h2>
+      <p class="muted">Every push runs these gates on GitHub Actions. A failing gate blocks the release; the Debian 12 base image was rejected by Trivy for OpenSSL CVEs and replaced.</p>
+      <div class="gates">
+        <div class="gate"><b>Build &amp; test</b><span>ESLint + security plugin, TypeScript strict, 40+ tests, coverage gate, E2E demo</span></div>
+        <div class="gate"><b>SAST</b><span>CodeQL security-extended, Semgrep OWASP / JWT / Node rules</span></div>
+        <div class="gate"><b>Secrets</b><span>gitleaks over the full git history</span></div>
+        <div class="gate"><b>Dependencies</b><span>npm audit, registry signatures, OSV-Scanner, Dependency Review, Dependabot with cooldown</span></div>
+        <div class="gate"><b>Container</b><span>Distroless non-root image, Trivy image + config scans, SPDX SBOM</span></div>
+        <div class="gate"><b>DAST</b><span>OWASP ZAP baseline against the running, hardened container</span></div>
+        <div class="gate"><b>Supply chain</b><span>Actions pinned by SHA, harden-runner, cosign keyless signing, SLSA provenance, OpenSSF Scorecard</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <span>Built by <a href="https://pokedev-ops.pro" rel="noopener">Adrián Valverde Elizondo</a></span>
+    <span class="muted">Demo tokens live 5 minutes. Messages are never stored or echoed back.</span>
+  </footer>
+</body>
+</html>

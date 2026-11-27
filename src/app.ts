@@ -19,6 +19,7 @@ import {
 } from './crypto/hybrid.js'
 import { rateLimit } from './http/rateLimit.js'
 import { SigningKeyStore } from './keys/signingKeys.js'
+import { assets } from './web/assets.generated.js'
 
 type Env = { Variables: { claims: AccessTokenClaims; requestId: string } }
 
@@ -46,7 +47,11 @@ export async function buildDeps(config: Config, now: () => number = Date.now): P
   const hybridKeys = config.hybridSecretKey
     ? hybridKeyPairFromSecret(b64u.decode(config.hybridSecretKey))
     : generateHybridKeyPair()
-  const clients = buildClients({ reader: config.readerSecret, admin: config.adminSecret })
+  const clients = buildClients({
+    reader: config.readerSecret,
+    admin: config.adminSecret,
+    ...(config.playground.enabled ? { playground: config.playground.secret } : {}),
+  })
   return { config, keys, tokens, hybridKeys, clients, now }
 }
 
@@ -85,14 +90,29 @@ export function createApp(deps: AppDeps): Hono<Env> {
   const app = new Hono<Env>()
 
   app.use(requestId())
-  app.use(
-    secureHeaders({
-      contentSecurityPolicy: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
-      strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
-      crossOriginResourcePolicy: 'same-origin',
-      referrerPolicy: 'no-referrer',
-    }),
-  )
+  const common = {
+    strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
+    crossOriginResourcePolicy: 'same-origin',
+    referrerPolicy: 'no-referrer',
+  } as const
+  // API responses: nothing may load or frame them
+  const apiHeaders = secureHeaders({ ...common, contentSecurityPolicy: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } })
+  // Playground page: only its own script and stylesheet, no inline code, status badges from GitHub/Scorecard
+  const pageHeaders = secureHeaders({
+    ...common,
+    contentSecurityPolicy: {
+      defaultSrc: ["'none'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https://github.com', 'https://api.scorecard.dev', 'https://img.shields.io'],
+      connectSrc: ["'self'"],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+      frameAncestors: ["'none'"],
+    },
+  })
+  const pagePaths = new Set(['/', '/app.js', '/app.css'])
+  app.use((c, next) => (pagePaths.has(c.req.path) ? pageHeaders(c, next) : apiHeaders(c, next)))
   app.use(bodyLimit({ maxSize: 64 * 1024, onError: (c) => c.json({ error: 'payload_too_large' }, 413) }))
 
   const requireScopes =
@@ -122,6 +142,24 @@ export function createApp(deps: AppDeps): Hono<Env> {
     }
 
   app.get('/health', (c) => c.json({ status: 'ok' }))
+
+  // ---- Interactive playground (static assets embedded at build time) ----
+  const serveAsset = (asset: { body: string; etag: string }, type: string, cache: string) => (c: Context) => {
+    c.header('ETag', asset.etag)
+    c.header('Cache-Control', cache)
+    if (c.req.header('if-none-match') === asset.etag) return c.body(null, 304)
+    c.header('Content-Type', type)
+    return c.body(asset.body)
+  }
+  app.get('/', serveAsset(assets.html, 'text/html; charset=utf-8', 'no-cache'))
+  app.get('/app.js', serveAsset(assets.js, 'text/javascript; charset=utf-8', 'public, max-age=300'))
+  app.get('/app.css', serveAsset(assets.css, 'text/css; charset=utf-8', 'public, max-age=300'))
+  app.get('/playground/config', (c) => {
+    if (!config.playground.enabled) return c.json({ error: 'not_found' }, 404)
+    noStore(c)
+    // Deliberately public, low-privilege sandbox credentials (no keys:rotate)
+    return c.json({ clientId: 'playground', clientSecret: config.playground.secret, scope: 'profile:read messages:write' })
+  })
 
   // RFC 8414 authorization server metadata
   app.get('/.well-known/oauth-authorization-server', (c) =>

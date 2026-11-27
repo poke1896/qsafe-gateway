@@ -10,6 +10,14 @@ A small, production-minded API that shows **DevSecOps end to end**: a hardened O
 (ES256 JWTs, rotating JWKS, revocation) plus **hybrid post-quantum encryption** (X-Wing = ML-KEM-768 + X25519),
 shipped through a CI/CD pipeline that scans, signs and attests every container image.
 
+## Interactive playground
+
+Run the server and open `http://localhost:8080/`: request a token and inspect it, verify it against the JWKS,
+encrypt a message **post-quantum in your browser** (WebCrypto + X-Wing) and watch the server decrypt it, then fire
+six real attacks at the API (`alg: none`, HS256 key confusion, payload tampering, missing scope, ciphertext and
+KEM tampering) and see each one blocked. The page is served with its own strict CSP (no inline script) and uses a
+deliberately public, low-privilege sandbox client.
+
 ## What it demonstrates
 
 | Area | Implementation |
@@ -18,7 +26,7 @@ shipped through a CI/CD pipeline that scans, signs and attests every container i
 | **Key management** | JWKS (RFC 7517) with RFC 7638 thumbprint `kid`s, zero-downtime rotation with a grace window, private keys never exported |
 | **Token hardening** | Algorithm allowlist (blocks `alg: none` and HS256/ES256 key confusion), `iss`/`aud`/`typ`/`exp`/`nbf` checks, clock tolerance, size limit, `jti` revocation (RFC 7009) |
 | **Post-quantum crypto** | X-Wing hybrid KEM (draft-connolly-cfrg-xwing-kem) + HKDF-SHA-256 + AES-256-GCM with header-bound AAD |
-| **App security** | Constant-time client auth, brute-force rate limiting, strict security headers (CSP, HSTS), body size limits, fail-fast config validation, no error oracles |
+| **App security** | Browser and server crypto implemented independently and tested for byte-level interoperability, constant-time client auth, brute-force rate limiting, strict security headers (CSP, HSTS), body size limits, fail-fast config validation, no error oracles |
 | **Pipeline** | Lint (incl. `eslint-plugin-security`), typecheck, tests with coverage gate, E2E demo |
 | **SAST / SCA / secrets** | CodeQL (security-extended), Semgrep (OWASP, JWT, Node), npm audit + registry signatures, OSV-Scanner, gitleaks on full history, Dependency Review on PRs |
 | **Container** | Multi-stage build, distroless non-root runtime, digest-pinned base images, Trivy config + image scans, SPDX SBOM, OWASP ZAP DAST against the running container |

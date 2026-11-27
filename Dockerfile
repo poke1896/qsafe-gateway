@@ -8,6 +8,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY tsconfig.json tsconfig.build.json ./
 COPY src ./src
+COPY web ./web
+COPY scripts/build-web.ts ./scripts/
 RUN npm run build \
  && npm prune --omit=dev --ignore-scripts
 

@@ -6,3 +6,4 @@ coverage/
 !.env.example
 *.log
 .vercel/
+src/web/assets.generated.ts

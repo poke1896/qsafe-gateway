@@ -9,13 +9,14 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build:web": "tsx scripts/build-web.ts",
+    "dev": "npm run build:web && tsx watch src/server.ts",
+    "build": "npm run build:web && tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "typecheck": "npm run build:web && tsc --noEmit && tsc -p tsconfig.web.json",
+    "lint": "npm run build:web && eslint .",
+    "test": "npm run build:web && vitest run",
+    "test:coverage": "npm run build:web && vitest run --coverage",
     "demo": "tsx scripts/demo-client.ts",
     "keys:generate": "tsx scripts/generate-keys.ts"
   },
@@ -30,6 +31,7 @@
     "@eslint/js": "10.0.1",
     "@types/node": "24.19.4",
     "@vitest/coverage-v8": "5.1.2",
+    "esbuild": "0.28.2",
     "eslint": "10.15.0",
     "eslint-plugin-security": "4.2.1",
     "globals": "17.14.0",
