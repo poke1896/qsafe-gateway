@@ -1,0 +1,41 @@
+{
+  "name": "qsafe-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DevSecOps reference API: OAuth2 client-credentials with ES256 JWTs + rotating JWKS, and hybrid post-quantum encryption (X-Wing: ML-KEM-768 + X25519).",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "demo": "tsx scripts/demo-client.ts",
+    "keys:generate": "tsx scripts/generate-keys.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.11",
+    "@noble/post-quantum": "0.7.1",
+    "hono": "4.13.23",
+    "jose": "6.2.18",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.4",
+    "@vitest/coverage-v8": "5.1.2",
+    "eslint": "10.15.0",
+    "eslint-plugin-security": "4.2.1",
+    "globals": "17.14.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.74.0",
+    "vitest": "5.1.2"
+  }
+}

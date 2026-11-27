@@ -1,0 +1,12 @@
+title = "qsafe-gateway gitleaks config"
+
+[extend]
+useDefault = true
+
+# Documented development-only fallbacks and test fixtures; production refuses to start with them.
+[[allowlists]]
+description = "dev-only and test fixture secrets"
+regexes = [
+  '''dev-only-(reader|admin)-secret-change-me-\d+''',
+  '''(reader|admin)-secret-for-tests-[0-9a-g]+''',
+]

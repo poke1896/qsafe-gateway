@@ -1,0 +1,2 @@
+10049	IGNORE	(Storable and Cacheable Content: JWKS/metadata are public and intentionally cacheable)
+10036	IGNORE	(Server Leaks Version Information: no Server header is sent by the Node runtime)
